@@ -1,10 +1,10 @@
-import utils
+import Vigenere.utils
 
 # Class for mapping the letters to their corresponding indexes
 class LetterMap:
     def __init__(self):
         # Generate the map of letters to their indexes
-        self.char_map, self.int_map = utils.generate_letter_map()
+        self.char_map, self.int_map = Vigenere.utils.generate_letter_map()
 
     # Method to match a character to its corresponding index
     def match_letter(self, char):
@@ -22,7 +22,7 @@ class LetterMap:
 class VignereTable:
     def __init__(self):
         # Generate the Vignere cipher table
-        self.table = utils.generate_table()
+        self.table = Vigenere.utils.generate_table()
         self.letter_map = LetterMap()
 
     # Method to get the cipher character for a given letter and key
@@ -46,20 +46,40 @@ class VignereCipher:
 
     # Method to encrypt a plaintext string given a key
     def encrypt(self, string, key):
-        string = utils.sanitize_input(string)
-        key = utils.sanitize_input(key)
-        extended_key = utils.fit_string(string, key)
+        key = Vigenere.utils.sanitize_input(key)
+        extended_key = Vigenere.utils.fit_string(string, key)
         ciphertext = ''
         for i in range(0, len(string)):
-            ciphertext += self.vignere_table.match_cipher(string[i], extended_key[i])
+            if string[i].upper() in self.vignere_table.letter_map.char_map:
+                if string[i].islower():
+                    ciphertext += self.vignere_table.match_cipher(string[i], extended_key[i]).lower()
+                else:
+                    ciphertext += self.vignere_table.match_cipher(string[i], extended_key[i])
+            else:
+                ciphertext += string[i]
         return ciphertext
 
     # Method to decrypt a ciphertext string given a key
     def decrypt(self, ciphertext, key):
-        string = utils.sanitize_input(ciphertext)
-        key = utils.sanitize_input(key)
-        extended_key = utils.fit_string(ciphertext, key)
+        key = Vigenere.utils.sanitize_input(key)
+        extended_key = Vigenere.utils.fit_string(ciphertext, key)
         plaintext = ''
         for i in range(0, len(ciphertext)):
-            plaintext += self.vignere_table.find_letter_in_a_column(extended_key[i], ciphertext[i])
+            if ciphertext[i].upper() in self.vignere_table.letter_map.char_map:
+                if ciphertext[i].islower():
+                    plaintext += self.vignere_table.find_letter_in_a_column(extended_key[i], ciphertext[i].upper()).lower()
+                else:
+                    plaintext += self.vignere_table.find_letter_in_a_column(extended_key[i], ciphertext[i])
+            else:
+                plaintext += ciphertext[i]
         return plaintext
+
+
+if __name__ == '__main__':
+    Vg = VignereCipher()
+    plaintext = 'Alan Mathison Turing was a British mathematician, logician, cryptanalyst, and computer scientist.'
+    key = 'ASIMOV'
+    encrypted = Vg.encrypt(plaintext, key)
+    decrypted = Vg.decrypt(encrypted, key)
+    print(encrypted)
+    print(decrypted)
